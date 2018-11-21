@@ -1,0 +1,773 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+labels:
+  template: ahoi-nodejs-mongo-persistent
+message: |-
+  The following service(s) have been created in your project: ${NAME}, ${DATABASE_SERVICE_NAME}.
+
+  For more information about using this template, including OpenShift considerations, see https://github.com/sparkassen-hub/ahoi-nodejs-demo-app/blob/master/README.md.
+metadata:
+  annotations:
+    description: An example AHOI ready Node.js application with a MongoDB database. For more
+      information about using this template, including OpenShift considerations, see
+      https://github.com/sparkassen-hub/ahoi-nodejs-demo-app/blob/master/README.md.
+    iconClass: icon-nodejs
+    openshift.io/display-name: Node.js + AHOI Config + MongoDB
+    openshift.io/documentation-url: https://github.com/openshift/nodejs-ex
+    openshift.io/long-description: This template defines resources needed to develop
+      a NodeJS application, including a build configuration, application deployment
+      configuration, and database deployment configuration.
+    openshift.io/provider-display-name: Red Hat, Inc.
+    openshift.io/support-url: https://access.redhat.com
+    tags: quickstart,nodejs,ahoi,symbioticon
+    template.openshift.io/bindable: "false"
+  name: ahoi-nodejs-mongo-persistent
+
+objects:
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: ahoi-env
+  data:
+    default-http-headers-static.json: |-
+      {
+        "X-XSS-Protection": "1; mode=block",
+        "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+        "Content-Security-Policy": {
+          "default-src": [
+            "'none'"
+          ],
+          "script-src": [
+            "'self'"
+          ],
+          "connect-src": [
+            "'self'"
+          ],
+          "img-src": [
+            "'self'"
+          ],
+          "style-src": [
+            "'self'"
+          ]
+        }
+      }
+    default-http-headers.json: |-
+      {
+        "X-Frame-Options": "SAMEORIGIN",
+        "X-DNS-Prefetch-Control": "off",
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+        "Strict-Transport-Security": "max-age=5184000"
+      }
+    private_key.pem: |
+      -----BEGIN PRIVATE KEY-----
+      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
+      SfPosGlH59gwQOR4hbZgOKOH6iga
+      -----END PRIVATE KEY-----
+    public_key.pem: |
+      -----BEGIN PUBLIC KEY-----
+      MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAqqdcbH4gvhoS4dw8blbH
+      Fez2aRNT+naSUk1rF+43d1NR0TEpq04MsUkxBpxq7v+aC8rCZ7dipMTiiynDnpvT
+      tYuKIW7FNvLcmZBpy9XamioooMWwrnSQW9GddrKP7eOsEbu7zYY3KbXm05oqsijj
+      N5mJSKcGO7ZgEXwx21KA9vFcZyWJIROueBgq4bSYx5AVjkdk7gXgQApVS+jcku8Q
+      f6jkns0Rb/PGxNh+63c1prZuwcX62iRr7T7OMYaMuqk/7PIxYzlJ9HbBv0pdSW2a
+      03zMI4SWHNIP8Wb/5Oo/5N3kaBcG9Rkcg/X3q0HDltkU0STOJ2zBoaX9PIPXK5HQ
+      /pvrhdW6kzca+SliV+YtenPKnCvGWQtbpR3KqHmYZ1aLujiuOMXVHgKOLY2js7uG
+      V2nFmhgjuthpXdLbAic2M+q9K6Trs6nbZoYpIDna1viRC/Q8OuffTXbrbODB8ifC
+      JZSQp0xGBf6VmyU+6kgRm3pOhbG9WFIXXoAEwJ18+ynyqHtDHT5rZF+wtHygRvFF
+      PcQWJrdOhdiJi3OTcJ2IhVyEkiQHR0tclODkZ4xp1Z43cbktjpTRieybpI6NtJWR
+      TUtnSnUPuWAbV1kuZ/yY9tGqN6jtiaFihc27puQlBnAzDiMkdPM0v4nT1QiIkoq5
+      dpvjYcoLX2rKt1XP18sR+bsCAwEAAQ==
+      -----END PUBLIC KEY-----
+    env.production: |
+      # Note: you should rename this file to make it hidden (.env.xxx instead of env.xxx)
+
+      # If using Visual Studio Code consider to install the DotENV extension
+
+
+      ########## AHOI API ##########
+
+      # Crendentials from AHOI registration: https://banking-sandbox.starfinanz.de/sandboxmanager/#/register
+      AHOI_CLIENTID = '${AHOI_CLIENTID}'
+      AHOI_CLIENTSECRET = '${AHOI_CLIENTSECRET}'
+      AHOI_APPSECRETIV = '${AHOI_APPSECRETIV}'
+      AHOI_APPSECRETKEY = '${AHOI_APPSECRETKEY}'
+      AHOI_BASEURL = 'https://banking-sandbox.starfinanz.de/ahoi/api/v2'
+      # Used to internally encrypt the installation id's for advanced security
+      # Think up any password or leave it empty if you want to encrypt the installationid yourself
+      AHOI_CRYPTKEY = 'ScL&aFPazDw6S#k3'
+
+      ########## SERVER ##########
+
+      SERVER_ADDRESS = '0.0.0.0'
+      SERVER_PORT = 8080
+
+      # In production a proxy server like NGINX should be used to handle load balancing, SSL termination
+      # and more
+      BEHIND_PROXY = false
+
+      # May be used to specify proxy ip settings and more, see
+      # https://expressjs.com/en/4x/api.html#trust.proxy.options.table 
+      TRUST_PROXY_SETTING = ''
+
+      DEFAULT_HTTP_HEADERS = 'file:./config/default-http-headers.json'
+      DEFAULT_HTTP_HEADERS_STATIC = 'file:./config/default-http-headers-static.json'
+
+      # use fastify or express as web framework
+      USE_FASTIFY=true
+      # Set the compatibiltiy with Express. Only needed, if Fastify is used as engine.
+      # Values from 1 - 4 are possible. This may affect the overall performance
+      # 1 = better compatibility but less performance, 4 = less compatibility but better performance
+      FASTIFY_COMPAT_LEVEL = 4
+
+      ########## Authentication settings ##########
+
+      # Allows to disable authentication during development
+      ENABLE_AUTHENTICATION = true
+
+      # Note: a valid mail server configuration is required
+      AUTH_EMAIL_CONFIRMATION_REQUIRED = false
+
+      LOGIN_ENDPOINT = '/login'
+      REGISTRATION_ENDPOINT = '/registration'
+      DELETE_ACCOUNT_ENDPOINT = '/deleteaccount'
+
+      # The public and private RSA key are provided here only for demo purposes.
+      # You should generate your own keys using online service like
+      # http://travistidwell.com/jsencrypt/demo/ or use the script 'generate-rsa-keys.sh' in root folder
+      # for mac and linux. Windows user can use Putty, see for example here:
+      # https://blog.fabioiotti.com/generate-rsa-key/ (Windows TL;DR)
+      #
+      # Note: you have to use absolute paths
+      AUTH_JWT_PRIVATE_KEY = 'file:./config/private_key.pem'
+      AUTH_JWT_PUBLIC_KEY = 'file:./config/public_key.pem'
+
+      ########## Logging ##########
+
+      ENABLE_WINSTON_LOGGER = true
+      ENABLE_SERVER_LOG = true
+      LOG_FOLDER = './logs'
+      LOG_LEVEL = 'info'
+      LOG_LEVEL_CONSOLE = 'warn'
+      # Uncomment to start express in debug mode
+      # DEBUG='express*''
+
+      ########## SERVER MIDDLEWARE AND SECURITY HEADERS ##########
+
+      # The compression middleware should not be used in production environment. Instead you should use a
+      # loadbalancer or reverse proxy like NGINX with compression enabled. That provides a better 
+      # performance
+      USE_GZIP = true
+
+      ALLOW_FILE_UPLOAD = false
+
+      DEFAULT_HTTP_HEADERS = 'file:./config/default-http-headers.json'
+      DEFAULT_HTTP_HEADERS_STATIC = 'file:./config/default-http-headers-static.json'
+
+
+
+      ########## DATABASE ##########
+
+      # This service uses MongoDB or TingoDB (https://github.com/sergeyksv/tingodb) to store data.
+      # The TingoDB is contained in the tungus module (https://github.com/anhoev/tungus.git).
+      # Default configuration in development uses TingoDB to allow easy startup without installing a
+      # database. At least in production environment you should use a MongoDB with encryption
+      # (https://docs.mongodb.com/manual/tutorial/configure-encryption/) 
+
+      # There are various options how to install or use MongoDB:
+      # 1. Install local: https://docs.mongodb.com/manual/installation/#mongodb-community-edition
+      # 2. Install local using docker: https://hub.docker.com/r/bitnami/mongodb/
+      # 3. Use a cloud service like MongoDB Atlas (https://www.mongodb.com/cloud/atlas) or mLab (https://mlab.com)
+      # 4. Other options :-)
+
+      #USE_TINGODB = false
+      #MONGODB_URI=mongodb://.tingodbdata
+      MONGODB_URI=mongodb://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_SERVICE_NAME}:27017
+
+      # If using MongoDB with encryption there is no need for the mongoose-encrypt plugin. If using
+      # TingoDB, it is recommended to store data encrypted using the mongoose-encrypt plugin.
+      # The secret keys are provided only for demo purposes here. You can generate your own keys using the
+      # script 'generate-mongoose-enc-keys.sh' for mac and linux in root folder. Maybe you have to execute
+      # chmod +x generate-mongoose-enc-keys.sh before to make the script executable.
+      # On Windows you can run the js script with `node generate-mongoose-enc-keys.js` 
+      USE_MONGOOSE_ENCRYPTION = true
+      MONGOOSE_ENCRYPT_SECRET = 'teCpjmoWi34YBwI2Of69MfcZej3gcgd6gN+Lmelw+gc='
+      MONGOOSE_ENCRYPT_SIGNKEY = '1PUwTdUrOCEyGF1V0QnK7ICUO9QYpXg7H1MLcog/pxS13Cys7XVWMvgLjK+ifmLYo8LO84LNUWtQYQQQSf1plA=='
+
+
+
+      ########## Email server ##########
+
+      # If you don't have a local mail server installed, you can use a cloud service like
+      # https://mailtrap.io
+      EMAIL_FROM = '"Max Mustermann" <max.mustermann@xyz.com>'
+      EMAIL_SUBJECT = 'Bitte Email bestätigen'
+      EMAIL_HOST = 'localhost'
+      EMAIL_PORT = '465'
+      EMAIL_USER = ''
+      EMAIL_PASSWORD = ''
+      EMAIL_SECURE = false
+      # EMAIL_TLS = '{}'
+      # EMAIL_IGNORE_TLS = true
+      # EMAIL_REQUIRE_TLS = false
+
+    env.development: |
+      # Note: you should rename this file to make it hidden (.env.xxx instead of env.xxx)
+
+      # If using Visual Studio Code consider to install the DotENV extension
+
+
+      ########## AHOI API ##########
+
+      # Crendentials from AHOI registration: https://banking-sandbox.starfinanz.de/sandboxmanager/#/register
+      AHOI_CLIENTID = '${AHOI_CLIENTID}'
+      AHOI_CLIENTSECRET = '${AHOI_CLIENTSECRET}'
+      AHOI_APPSECRETIV = '${AHOI_APPSECRETIV}'
+      AHOI_APPSECRETKEY = '${AHOI_APPSECRETKEY}'
+      AHOI_BASEURL = 'https://banking-sandbox.starfinanz.de/ahoi/api/v2'
+      # Used to internally encrypt the installation id's for advanced security
+      # Think up any password or leave it empty if you want to encrypt the installationid yourself
+      AHOI_CRYPTKEY = 'ScL&aFPazDw6S#k3'
+
+      ########## SERVER ##########
+
+      SERVER_ADDRESS = '0.0.0.0'
+      SERVER_PORT = 8080
+
+      # In production a proxy server like NGINX should be used to handle load balancing, SSL termination
+      # and more
+      BEHIND_PROXY = false
+
+      # May be used to specify proxy ip settings and more, see
+      # https://expressjs.com/en/4x/api.html#trust.proxy.options.table 
+      TRUST_PROXY_SETTING = ''
+
+      DEFAULT_HTTP_HEADERS = 'file:./config/default-http-headers.json'
+      DEFAULT_HTTP_HEADERS_STATIC = 'file:./config/default-http-headers-static.json'
+
+      # use fastify or express as web framework
+      USE_FASTIFY=true
+      # Set the compatibiltiy with Express. Only needed, if Fastify is used as engine.
+      # Values from 1 - 4 are possible. This may affect the overall performance
+      # 1 = better compatibility but less performance, 4 = less compatibility but better performance
+      FASTIFY_COMPAT_LEVEL = 4
+
+      ########## Authentication settings ##########
+
+      # Allows to disable authentication during development
+      ENABLE_AUTHENTICATION = true
+
+      # Note: a valid mail server configuration is required
+      AUTH_EMAIL_CONFIRMATION_REQUIRED = false
+
+      LOGIN_ENDPOINT = '/login'
+      REGISTRATION_ENDPOINT = '/registration'
+      DELETE_ACCOUNT_ENDPOINT = '/deleteaccount'
+
+      # The public and private RSA key are provided here only for demo purposes.
+      # You should generate your own keys using online service like
+      # http://travistidwell.com/jsencrypt/demo/ or use the script 'generate-rsa-keys.sh' in root folder
+      # for mac and linux. Windows user can use Putty, see for example here:
+      # https://blog.fabioiotti.com/generate-rsa-key/ (Windows TL;DR)
+      #
+      # Note: you have to use absolute paths
+      AUTH_JWT_PRIVATE_KEY = 'file:./config/private_key.pem'
+      AUTH_JWT_PUBLIC_KEY = 'file:./config/public_key.pem'
+
+      ########## Logging ##########
+
+      ENABLE_WINSTON_LOGGER = true
+      ENABLE_SERVER_LOG = true
+      LOG_FOLDER = './logs'
+      LOG_LEVEL = 'info'
+      LOG_LEVEL_CONSOLE = 'warn'
+      # Uncomment to start express in debug mode
+      # DEBUG='express*''
+
+      ########## SERVER MIDDLEWARE AND SECURITY HEADERS ##########
+
+      # The compression middleware should not be used in production environment. Instead you should use a
+      # loadbalancer or reverse proxy like NGINX with compression enabled. That provides a better 
+      # performance
+      USE_GZIP = true
+
+      ALLOW_FILE_UPLOAD = false
+
+      DEFAULT_HTTP_HEADERS = 'file:./config/default-http-headers.json'
+      DEFAULT_HTTP_HEADERS_STATIC = 'file:./config/default-http-headers-static.json'
+
+      ########## DATABASE ##########
+
+      # This service uses MongoDB or TingoDB (https://github.com/sergeyksv/tingodb) to store data.
+      # The TingoDB is contained in the tungus module (https://github.com/anhoev/tungus.git).
+      # Default configuration in development uses TingoDB to allow easy startup without installing a
+      # database. At least in production environment you should use a MongoDB with encryption
+      # (https://docs.mongodb.com/manual/tutorial/configure-encryption/) 
+
+      # There are various options how to install or use MongoDB:
+      # 1. Install local: https://docs.mongodb.com/manual/installation/#mongodb-community-edition
+      # 2. Install local using docker: https://hub.docker.com/r/bitnami/mongodb/
+      # 3. Use a cloud service like MongoDB Atlas (https://www.mongodb.com/cloud/atlas) or mLab (https://mlab.com)
+      # 4. Other options :-)
+
+      #USE_TINGODB = false
+      #MONGODB_URI=mongodb://.tingodbdata
+      MONGODB_URI=mongodb://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_SERVICE_NAME}:27017
+
+      # If using MongoDB with encryption there is no need for the mongoose-encrypt plugin. If using
+      # TingoDB, it is recommended to store data encrypted using the mongoose-encrypt plugin.
+      # The secret keys are provided only for demo purposes here. You can generate your own keys using the
+      # script 'generate-mongoose-enc-keys.sh' for mac and linux in root folder. Maybe you have to execute
+      # chmod +x generate-mongoose-enc-keys.sh before to make the script executable.
+      # On Windows you can run the js script with `node generate-mongoose-enc-keys.js` 
+      USE_MONGOOSE_ENCRYPTION = true
+      MONGOOSE_ENCRYPT_SECRET = 'teCpjmoWi34YBwI2Of69MfcZej3gcgd6gN+Lmelw+gc='
+      MONGOOSE_ENCRYPT_SIGNKEY = '1PUwTdUrOCEyGF1V0QnK7ICUO9QYpXg7H1MLcog/pxS13Cys7XVWMvgLjK+ifmLYo8LO84LNUWtQYQQQSf1plA=='
+
+
+
+      ########## Email server ##########
+
+      # If you don't have a local mail server installed, you can use a cloud service like
+      # https://mailtrap.io
+      EMAIL_FROM = '"Max Mustermann" <max.mustermann@xyz.com>'
+      EMAIL_SUBJECT = 'Bitte Email bestätigen'
+      EMAIL_HOST = 'localhost'
+      EMAIL_PORT = '465'
+      EMAIL_USER = ''
+      EMAIL_PASSWORD = ''
+      EMAIL_SECURE = false
+      # EMAIL_TLS = '{}'
+      # EMAIL_IGNORE_TLS = true
+      # EMAIL_REQUIRE_TLS = false
+    
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    name: ${NAME}
+  stringData:
+    database-admin-password: ${DATABASE_ADMIN_PASSWORD}
+    database-password: ${DATABASE_PASSWORD}
+    database-user: ${DATABASE_USER}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      description: Exposes and load balances the application pods
+      service.alpha.openshift.io/dependencies: '[{"name": "${DATABASE_SERVICE_NAME}",
+        "kind": "Service"}]'
+    name: ${NAME}
+  spec:
+    ports:
+    - name: web
+      port: 8080
+      targetPort: 8080
+    selector:
+      name: ${NAME}
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: ${NAME}
+  spec:
+    host: ${APPLICATION_DOMAIN}
+    to:
+      kind: Service
+      name: ${NAME}
+- apiVersion: v1
+  kind: ImageStream
+  metadata:
+    annotations:
+      description: Keeps track of changes in the application image
+    name: ${NAME}
+- apiVersion: v1
+  kind: BuildConfig
+  metadata:
+    annotations:
+      description: Defines how to build the application
+      template.alpha.openshift.io/wait-for-ready: "true"
+    name: ${NAME}
+  spec:
+    output:
+      to:
+        kind: ImageStreamTag
+        name: ${NAME}:latest
+#    postCommit:
+#      script: npm test
+    source:
+      contextDir: ${CONTEXT_DIR}
+      git:
+        ref: ${SOURCE_REPOSITORY_REF}
+        uri: ${SOURCE_REPOSITORY_URL}
+      type: Git
+    strategy:
+      sourceStrategy:
+        env:
+        - name: NPM_MIRROR
+          value: ${NPM_MIRROR}
+        - name: NODE_ENV
+          value: ${NODE_ENV}
+        from:
+          kind: ImageStreamTag
+          name: nodejs:${NODEJS_VERSION}
+          namespace: ${NAMESPACE}
+      type: Source
+    triggers:
+    - type: ImageChange
+    - type: ConfigChange
+    - github:
+        secret: ${GITHUB_WEBHOOK_SECRET}
+      type: GitHub
+    - generic:
+        secret: ${GENERIC_WEBHOOK_SECRET}
+      type: Generic
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    annotations:
+      description: Defines how to deploy the application server
+      template.alpha.openshift.io/wait-for-ready: "true"
+    name: ${NAME}
+  spec:
+    replicas: 1
+    selector:
+      name: ${NAME}
+    strategy:
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          name: ${NAME}
+        name: ${NAME}
+      spec:
+        containers:
+        - env:
+          - name: NODE_ENV
+            value: ${NODE_ENV}
+          - name: DATABASE_SERVICE_NAME
+            value: ${DATABASE_SERVICE_NAME}
+          - name: MONGODB_USER
+            valueFrom:
+              secretKeyRef:
+                key: database-user
+                name: ${NAME}
+          - name: MONGODB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: database-password
+                name: ${NAME}
+          - name: MONGODB_DATABASE
+            value: ${DATABASE_NAME}
+          - name: MONGODB_ADMIN_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: database-admin-password
+                name: ${NAME}
+          image: ' '
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 30
+            timeoutSeconds: 3
+          name: nodejs-mongo-persistent
+          ports:
+          - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 3
+            timeoutSeconds: 3
+          resources:
+            limits:
+              memory: ${MEMORY_LIMIT}
+          volumeMounts:
+          - name: ahoi-env
+            mountPath: /opt/app-root/src/config
+        volumes:
+        - name: ahoi-env
+          configMap:
+            name: ahoi-env
+    triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - nodejs-mongo-persistent
+        from:
+          kind: ImageStreamTag
+          name: ${NAME}:latest
+      type: ImageChange
+    - type: ConfigChange
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: ${DATABASE_SERVICE_NAME}
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: ${VOLUME_CAPACITY}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      description: Exposes the database server
+    name: ${DATABASE_SERVICE_NAME}
+  spec:
+    ports:
+    - name: mongodb
+      port: 27017
+      targetPort: 27017
+    selector:
+      name: ${DATABASE_SERVICE_NAME}
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    annotations:
+      description: Defines how to deploy the database
+      template.alpha.openshift.io/wait-for-ready: "true"
+    name: ${DATABASE_SERVICE_NAME}
+  spec:
+    replicas: 1
+    selector:
+      name: ${DATABASE_SERVICE_NAME}
+    strategy:
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          name: ${DATABASE_SERVICE_NAME}
+        name: ${DATABASE_SERVICE_NAME}
+      spec:
+        containers:
+        - env:
+          - name: MONGODB_USER
+            valueFrom:
+              secretKeyRef:
+                key: database-user
+                name: ${NAME}
+          - name: MONGODB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: database-password
+                name: ${NAME}
+          - name: MONGODB_DATABASE
+            value: ${DATABASE_NAME}
+          - name: MONGODB_ADMIN_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: database-admin-password
+                name: ${NAME}
+          image: ' '
+          livenessProbe:
+            initialDelaySeconds: 30
+            tcpSocket:
+              port: 27017
+            timeoutSeconds: 1
+          name: mongodb
+          ports:
+          - containerPort: 27017
+          readinessProbe:
+            exec:
+              command:
+              - /bin/sh
+              - -i
+              - -c
+              - mongo 127.0.0.1:27017/$MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD
+                --eval="quit()"
+            initialDelaySeconds: 3
+            timeoutSeconds: 1
+          resources:
+            limits:
+              memory: ${MEMORY_MONGODB_LIMIT}
+          volumeMounts:
+          - mountPath: /var/lib/mongodb/data
+            name: ${DATABASE_SERVICE_NAME}-data
+        volumes:
+        - name: ${DATABASE_SERVICE_NAME}-data
+          persistentVolumeClaim:
+            claimName: ${DATABASE_SERVICE_NAME}
+    triggers:
+    - imageChangeParams:
+        automatic: true
+        containerNames:
+        - mongodb
+        from:
+          kind: ImageStreamTag
+          name: mongodb:${MONGODB_VERSION}
+          namespace: ${NAMESPACE}
+      type: ImageChange
+    - type: ConfigChange
+parameters:
+
+- description: Authentication Client ID
+  displayName: AHOI_CLIENTID
+  name: AHOI_CLIENTID
+  required: true
+
+- description: Authentication Client Secret
+  displayName: AHOI_CLIENTSECRET
+  name: AHOI_CLIENTSECRET
+  required: true
+
+- description: Authentication App Secret IV
+  displayName: AHOI_APPSECRETIV
+  name: AHOI_APPSECRETIV
+  required: true
+
+- description: Authentication App Secret Key
+  displayName: AHOI_APPSECRETKEY
+  name: AHOI_APPSECRETKEY
+  required: true
+
+- description: AHOI Crypt Key
+  displayName: AHOI_CRYPTKEY
+  from: '[a-zA-Z0-9]{16}'
+  generate: expression
+  name: AHOI_CRYPTKEY
+  required: true
+
+- description: AHOI NODE ENV
+  displayName: NODE_ENV
+  name: NODE_ENV
+  value: "development"
+  required: true
+
+- description: The name assigned to all of the frontend objects defined in this template.
+  displayName: Name
+  name: NAME
+  required: true
+  value: ahoi-node-test-app
+- description: The OpenShift Namespace where the ImageStream resides.
+  displayName: Namespace
+  name: NAMESPACE
+  required: true
+  value: openshift
+- description: Version of NodeJS image to be used (6, 8, or latest).
+  displayName: Version of NodeJS Image
+  name: NODEJS_VERSION
+  required: true
+  value: "10"
+- description: Version of MongoDB image to be used (3.2, 3.4, or latest).
+  displayName: Version of MongoDB Image
+  name: MONGODB_VERSION
+  required: true
+  value: "3.4"
+- description: Maximum amount of memory the Node.js container can use.
+  displayName: Memory Limit
+  name: MEMORY_LIMIT
+  required: true
+  value: 512Mi
+- description: Maximum amount of memory the MongoDB container can use.
+  displayName: Memory Limit (MongoDB)
+  name: MEMORY_MONGODB_LIMIT
+  required: true
+  value: 512Mi
+- description: Volume space available for data, e.g. 512Mi, 2Gi
+  displayName: Volume Capacity
+  name: VOLUME_CAPACITY
+  required: true
+  value: 1Gi
+- description: The URL of the repository with your application source code.
+  displayName: Git Repository URL
+  name: SOURCE_REPOSITORY_URL
+  required: true
+  value: https://github.com/sparkassen-hub/ahoi-nodejs-demo-app.git
+- description: Set this to a branch name, tag or other ref of your repository if you
+    are not using the default branch.
+  displayName: Git Reference
+  name: SOURCE_REPOSITORY_REF
+- description: Set this to the relative path to your project if it is not in the root
+    of your repository.
+  displayName: Context Directory
+  name: CONTEXT_DIR
+- description: The exposed hostname that will route to the Node.js service, if left
+    blank a value will be defaulted.
+  displayName: Application Hostname
+  name: APPLICATION_DOMAIN
+- description: Github trigger secret.  A difficult to guess string encoded as part
+    of the webhook URL.  Not encrypted.
+  displayName: GitHub Webhook Secret
+  from: '[a-zA-Z0-9]{40}'
+  generate: expression
+  name: GITHUB_WEBHOOK_SECRET
+- description: A secret string used to configure the Generic webhook.
+  displayName: Generic Webhook Secret
+  from: '[a-zA-Z0-9]{40}'
+  generate: expression
+  name: GENERIC_WEBHOOK_SECRET
+- displayName: Database Service Name
+  name: DATABASE_SERVICE_NAME
+  required: true
+  value: mongodb
+- description: Username for MongoDB user that will be used for accessing the database.
+  displayName: MongoDB Username
+  from: user[A-Z0-9]{3}
+  generate: expression
+  name: DATABASE_USER
+- description: Password for the MongoDB user.
+  displayName: MongoDB Password
+  from: '[a-zA-Z0-9]{16}'
+  generate: expression
+  name: DATABASE_PASSWORD
+- displayName: Database Name
+  name: DATABASE_NAME
+  required: true
+  value: sampledb
+- description: Password for the database admin user.
+  displayName: Database Administrator Password
+  from: '[a-zA-Z0-9]{16}'
+  generate: expression
+  name: DATABASE_ADMIN_PASSWORD
+- description: The custom NPM mirror URL
+  displayName: Custom NPM Mirror URL
+  name: NPM_MIRROR
